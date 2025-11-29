@@ -20,8 +20,10 @@
 	9 1001 : 8 bit value (4 MSB of the byte first, 4 MSB of the byte then)
 		.1 e.g. (0x9A 0x93) would set 0xA3 and not 0x3A
 		.2 always send 0x9* packets two by two
-	A 1010 : EMPTY
-	C 1100 : EMPTY
+	A 1010 : SETUP 4 BIT ADDRESS
+		.1 same specs as ADDR (0x3) & DATA (0x6)
+	C 1100 : SETUP 8 BIT ADDRESS
+		.1 same specs as ADDR (0x5) & DATA (0x9)
 	F 1111 : RESERVED
 		0xF0 : POWER OFF ALL (TAKE MEMORY values, SET ALL PWM registers to 0)
 		0xF3 : UPDATE command (received DATA are stored to internal MCU memory, this command COPY them to PWM OUT regs)

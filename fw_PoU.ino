@@ -7,11 +7,17 @@
 #define PWMPORT_5 11
 #define MAX_PORTS 6
 
+// EEPROM CELLS CONTAINING ADDR BASE4-8
+#define ROM_ADDR4 0
+#define ROM_ADDR8 1
+
 // KEYs
 #define KCODE_ADDR4 0x3 // Address 4-bit
 #define KCODE_ADDR8 0x5 // Address 8-bit
 #define KCODE_DATA4 0x6 // Data 4-bit (MSB)
 #define KCODE_DATA8 0x9 // Data 8-bit
+#define KCODE_SETA4 0xA // Set ADDR4 EEPROM
+#define KCODE_SETA8 0xC // Set ADDR8 EEPROM
 
 // RESERVED COMMANDS
 #define KCODE_RES_END 0x0A // end of stream
@@ -23,6 +29,8 @@
 //1 wait 2nd part of base 8 addr
 //2 wait data, command or end of stream
 //3 wait 2nd part of 8 bit data packet
+
+#include <EEPROM.h>
 
 volatile uint8_t fsm_state=0;
 uint8_t own_addr_base4;
@@ -46,8 +54,8 @@ void setup() {
   analogWrite(PWMPORT_3,0);
   analogWrite(PWMPORT_4,0);
   analogWrite(PWMPORT_5,0);
-  own_addr_base4 = 0x3; // 4-bit addr  hard coded or with switches
-  own_addr_base8 = 0x3C; // 8-bit addr hard coded or with switches
+  own_addr_base4 = EEPROM.read(ROM_ADDR4);
+  own_addr_base8 = EEPROM.read(ROM_ADDR8);
 }
 
 void loop() {
@@ -98,7 +106,14 @@ void loop() {
             fsm_state=2; // wait for new command
           } else if (d_key==KCODE_DATA8) { // DATA 8-BIT
             data_read[port_cnt]=d_val<<4; // SAVE 4-MSB
-            fsm_state=3;  // wait second part of data
+            fsm_state=3; // wait second part of data
+          } else if (d_key ==KCODE_SETA4) { // SET ADDR4 ID
+            own_addr_base4=d_val;
+            EEPROM.put(ROM_ADDR4, own_addr_base4);
+            fsm_state=2; // wait for new command
+          } else if (d_key ==KCODE_SETA8) { // SET ADDR8 ID
+            addr_read=d_val<<4; // SAVE 4-MSB
+            fsm_state=4;
           } else if (d_reg ==KCODE_RES_UPD) { // update
             // update reg to port procedure
             analogWrite(PWMPORT_0,data_read[0]);
@@ -119,8 +134,7 @@ void loop() {
             fsm_state=2;
           } else if (d_reg ==KCODE_RES_END) { // EXIT
             fsm_state=0;
-          }
-            else {
+          } else {
             fsm_state=0;
           }
           break;
@@ -128,6 +142,16 @@ void loop() {
           if(d_key==KCODE_DATA8) {
             data_read[port_cnt]+=d_val; // SAVE 4-MSB
             port_cnt++;
+            fsm_state=2;  // wait for other data
+          } else {
+            fsm_state=0;
+          }
+          break;
+      case 4: // 2nd packet base 8 addr SET
+          if(d_key==KCODE_SETA8) {
+            addr_read+=d_val; // SAVE 4-MSB
+            own_addr_base8=addr_read;
+            EEPROM.put(ROM_ADDR8, own_addr_base8);
             fsm_state=2;  // wait for other data
           } else {
             fsm_state=0;
