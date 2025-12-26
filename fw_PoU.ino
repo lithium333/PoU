@@ -41,7 +41,7 @@ uint8_t reg_port0=0;
 uint8_t port_cnt=0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(PWMPORT_0,OUTPUT);
   pinMode(PWMPORT_1,OUTPUT);
   pinMode(PWMPORT_2,OUTPUT);
