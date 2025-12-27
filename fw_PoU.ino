@@ -23,6 +23,7 @@
 #define KCODE_RES_END 0x0A // end of stream
 #define KCODE_RES_OFF 0xF0 // POWER OFF ALL command
 #define KCODE_RES_UPD 0xF3 // UPDATE command
+#define KCODE_RES_SKP 0xFC // SKIP 1 Data
 #define KCODE_RES_BRD 0xFF // BROADCAST dest
 
 //0 idle : expected address
@@ -76,7 +77,7 @@ void loop() {
           } else if (d_key==KCODE_ADDR8) { // addr on 8 bit
             addr_read=d_val<<4; // SAVE 4-MSB
             fsm_state=1;
-          } else if (d_reg ==KCODE_RES_BRD) { // broadcast
+          } else if (d_reg==KCODE_RES_BRD) { // broadcast
             port_cnt=0;
             fsm_state=2;
           } else {
@@ -107,14 +108,14 @@ void loop() {
           } else if (d_key==KCODE_DATA8) { // DATA 8-BIT
             data_read[port_cnt]=d_val<<4; // SAVE 4-MSB
             fsm_state=3; // wait second part of data
-          } else if (d_key ==KCODE_SETA4) { // SET ADDR4 ID
+          } else if (d_key==KCODE_SETA4) { // SET ADDR4 ID
             own_addr_base4=d_val;
             EEPROM.put(ROM_ADDR4, own_addr_base4);
             fsm_state=2; // wait for new command
-          } else if (d_key ==KCODE_SETA8) { // SET ADDR8 ID
+          } else if (d_key==KCODE_SETA8) { // SET ADDR8 ID
             addr_read=d_val<<4; // SAVE 4-MSB
             fsm_state=4;
-          } else if (d_reg ==KCODE_RES_UPD) { // update
+          } else if (d_reg==KCODE_RES_UPD) { // update
             // update reg to port procedure
             analogWrite(PWMPORT_0,data_read[0]);
             analogWrite(PWMPORT_1,data_read[1]);
@@ -123,7 +124,10 @@ void loop() {
             analogWrite(PWMPORT_4,data_read[4]);
             analogWrite(PWMPORT_5,data_read[5]);
             fsm_state=2;
-          } else if (d_reg ==KCODE_RES_OFF) { // power OFF
+          } else if(d_reg==KCODE_RES_SKP) { // skip one data
+            port_cnt++;
+            fsm_state=2;
+          } else if (d_reg==KCODE_RES_OFF) { // power OFF
             // power off procedure
             analogWrite(PWMPORT_0,0);
             analogWrite(PWMPORT_1,0);
@@ -132,7 +136,7 @@ void loop() {
             analogWrite(PWMPORT_4,0);
             analogWrite(PWMPORT_5,0);
             fsm_state=2;
-          } else if (d_reg ==KCODE_RES_END) { // EXIT
+          } else if (d_reg==KCODE_RES_END) { // EXIT
             fsm_state=0;
           } else {
             fsm_state=0;

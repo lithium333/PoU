@@ -27,6 +27,7 @@
 	F 1111 : RESERVED
 		0xF0 : POWER OFF ALL (TAKE MEMORY values, SET ALL PWM registers to 0)
 		0xF3 : UPDATE command (received DATA are stored to internal MCU memory, this command COPY them to PWM OUT regs)
+		0xFC : SKIP ONE DATA (placeholder if you want to keep data)
 		0xFF : BROADCAST as address
 
 # 2 ALLOWED STREAM FORMATS
