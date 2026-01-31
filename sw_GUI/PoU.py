@@ -42,11 +42,20 @@ def ttyConnect():
 def ttySend():
 	global entr_byte
 	global tty_obj
-	tty_arr = [int(entr_byte.get(),16)]
+	global pt
+	if(pt!=None):
+		flagStop()
+	tty_arr = []
 	try:
-		tty_obj.write(tty_arr)
+		arr_str=(entr_byte.get()).split(" ")
+		for sframe in arr_str:
+			tty_arr+=[int(sframe,16)]
+		try:
+			tty_obj.write(tty_arr)
+		except Exception as e:
+			messagebox.showerror("Serial ERROR","Exception: "+repr(e),parent=rootW)
 	except Exception as e:
-		messagebox.showerror("Serial ERROR","Exception: "+repr(e),parent=rootW)
+		messagebox.showerror("Format ERROR","Exception: "+repr(e),parent=rootW)
 
 def ttyStroboP(): # Strobo wrapper
 	global pt
@@ -265,16 +274,17 @@ butt_tty = tk.Button(rootW,text="CONNECT",bg="#0000FF",fg="white",command=ttyCon
 tk.Button(rootW,text="ERROR",bg="#FF0000",fg="white",command=ttyConnect)
 butt_tty.place(x=210,y=20,h=30)
 
-# SECTION 1.2 : EMPTY
+# SECTION 1.2 : SET ADDR (BROADCAST!)
 
-# SECTION 2.1 : SEND BYTE
+
+# SECTION 2.1 : SEND BYTE STREAM
 global byte_user
-byte_user = StringVar(rootW, value="0xFF")
+byte_user = StringVar(rootW, value="FF 61 61 61 61 61 61 F3 0A")
 global entr_byte
 entr_byte = tk.Entry(rootW, textvariable = byte_user)
 entr_byte.place(x=20,y=70,h=30,w=175)
-butt_byte = tk.Button(rootW,text="SEND",command=ttySend)
-butt_byte.place(x=210,y=70,h=30,w=50)
+butt_byte = tk.Button(rootW,text="SEND BYTES",bg="#5F009F",fg="white",command=ttySend)
+butt_byte.place(x=210,y=70,h=30)
 
 # SECTION 2.2 A : SEND CUSTOM SEQUENCE LOOP
 butt_cseq = tk.Button(rootW,text="CUST. LOOP",command=ttyCseqP)
@@ -318,9 +328,9 @@ butt_strobo.place(x=210,y=170,h=30)
 # SECTION 4.2 : MISC COLORS
 butt_miscR = tk.Button(rootW,command=lambda: ttySetL([0,255,0,0,0]),bg="#FF0000")
 butt_miscR.place(x=340,y=170,h=30,w=30)
-butt_miscO = tk.Button(rootW,command=lambda: ttySetL([0,255,127,0,255]),bg="#FF7F00")
+butt_miscO = tk.Button(rootW,command=lambda: ttySetL([0,255,0,0,255]),bg="#FF7F00")
 butt_miscO.place(x=375,y=170,h=30,w=30)
-butt_miscY = tk.Button(rootW,command=lambda: ttySetL([0,255,255,0,255]),bg="#FFFF00")
+butt_miscY = tk.Button(rootW,command=lambda: ttySetL([0,255,127,0,255]),bg="#FFFF00")
 butt_miscY.place(x=410,y=170,h=30,w=30)
 butt_miscG = tk.Button(rootW,command=lambda: ttySetL([0,0,255,0,0]),bg="#00FF00")
 butt_miscG.place(x=445,y=170,h=30,w=30)
@@ -328,13 +338,13 @@ butt_miscC = tk.Button(rootW,command=lambda: ttySetL([0,0,255,255,0]),bg="#00FFF
 butt_miscC.place(x=480,y=170,h=30,w=30)
 butt_miscB = tk.Button(rootW,command=lambda: ttySetL([0,0,0,255,0]),bg="#0000FF")
 butt_miscB.place(x=515,y=170,h=30,w=30)
-butt_miscV = tk.Button(rootW,command=lambda: ttySetL([0,255,0,255,0]),bg="#FF00FF")
+butt_miscV = tk.Button(rootW,command=lambda: ttySetL([0,255,0,127,0]),bg="#FF00FF")
 butt_miscV.place(x=550,y=170,h=30,w=30)
 butt_miscW = tk.Button(rootW,command=lambda: ttySetL([255,255,255,255,255]),bg="#FFFFFF")
 butt_miscW.place(x=585,y=170,h=30,w=30)
 
 # SECTION -1 : STOP
-butt_stop = tk.Button(rootW,text="STOP",command=flagStop,fg='white',bg='red')
+butt_stop = tk.Button(rootW,text="STOP/CLEAR",command=flagStop,fg='white',bg='red')
 butt_stop.place(x=20,y=270,h=30)
 
 
